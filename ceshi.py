@@ -1,3 +1,3 @@
-for i in range(1,110):
-  if (i % 2 == 0):
+for i in range(19,110):
+  if (i % 3 == 0):
     print(i)
