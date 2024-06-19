@@ -12,11 +12,11 @@ args = parser.parse_args()
 
 # 创建一个空的字典来存储每个职位的技术栈
 job_skills_dict = defaultdict(list)
-csv_path = 'Boss直聘_skills.csv'  # 假定文件已上传到这个路径
+csv_path = 'update_Boss_skills.csv'  # 假定文件已上传到这个路径
 df = pd.read_csv(csv_path)
 
 # 加载预训练的 SentenceTransformer 模型
-model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+model = SentenceTransformer("./paraphrase-multilingual-MiniLM-L12-v2")
 
 # 提取技术栈列中的每个技术，并转换为 JSON 格式
 for index, row in df.iterrows():

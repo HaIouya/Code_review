@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import pandas as pd
 from collections import defaultdict
 from sentence_transformers import SentenceTransformer
@@ -10,9 +9,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 from tkinter import ttk
 
+# 创建一个函数来加载模型
+def load_model():
+    return SentenceTransformer("./paraphrase-multilingual-MiniLM-L12-v2")
+
 class JobSkillsAnalyzer:
-    def __init__(self, csv_path):
+    def __init__(self, csv_path, model):
         self.csv_path = csv_path
+        self.model = model
         self.job_skills_dict = self.load_job_skills()
         self.job_tec_json = self.process_job_skills()
 
@@ -34,13 +38,16 @@ class JobSkillsAnalyzer:
                     skill_counts[skill] += 1
             job_tec_json[job_title] = dict(skill_counts)
         return job_tec_json
-
+    def get_top_skills(self, job_title, N):
+        # 获取前N个技能
+        skills = self.job_tec_json[job_title]
+        sorted_skills = sorted(skills.items(), key=lambda x: x[1], reverse=True)
+        return dict(sorted_skills[:N])
     def merge_similar_skills(self, threshold=0.85):
-        model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
         for job_name, skills in self.job_tec_json.items():
             skill_names = list(skills.keys())
-            skill_embeddings = model.encode(skill_names)
-            similarities = model.similarity(skill_embeddings, skill_embeddings)
+            skill_embeddings = self.model.encode(skill_names)
+            similarities = self.model.similarity(skill_embeddings, skill_embeddings)
 
             merged_skills = set()
             for i, skill1 in enumerate(skill_names):
@@ -56,13 +63,12 @@ class JobSkillsAnalyzer:
                 del self.job_tec_json[job_name][skill]
     
     def find_most_similar_job(self, user_input):
-        model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
         job_titles = list(self.job_tec_json.keys())
-        job_embeddings = model.encode(job_titles)
-        user_embedding = model.encode([user_input])
+        job_embeddings = self.model.encode(job_titles)
+        user_embedding = self.model.encode([user_input])
 
         # 计算用户输入与每个岗位名称的相似度
-        similarities = model.similarity(user_embedding, job_embeddings)
+        similarities = self.model.similarity(user_embedding, job_embeddings)
 
         # 找到最相似的岗位名称
         most_similar_index = np.argmax(similarities)
@@ -93,27 +99,48 @@ class RadarChartDrawer:
         plt.show()
 
 def main():
-    analyzer = JobSkillsAnalyzer('Boss直聘_skills.csv')
+    # 加载模型
+    model = load_model()
+    analyzer = JobSkillsAnalyzer('Boss直聘_skills.csv', model)
     analyzer.merge_similar_skills()
     radar_chart_drawer = RadarChartDrawer(analyzer.job_tec_json)
 
     root = tk.Tk()
+    root.title("职业星图绘制")
     
-    root.title("职业星图绘制") 
-        
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.get_tk_widget().pack()
 
+    def display_skills_to_draw(selected_job, N):
+        # 销毁之前的排行榜窗口
+        if hasattr(display_skills_to_draw, 'frame'):
+            display_skills_to_draw.frame.destroy()
+        
+        # 创建一个新的框架用于显示排行榜
+        display_skills_to_draw.frame = tk.Frame(root)
+        display_skills_to_draw.frame.pack()
+
+        # 获取前N个技能
+        skills_to_display = analyzer.get_top_skills(selected_job, N)
+        skills_text = f"Displaying the top {N} skills for job '{selected_job}':\n"
+        for skill, count in skills_to_display.items():
+            skills_text += f"{skill}: {count}\n"
+        skills_label = tk.Label(display_skills_to_draw.frame, text=skills_text)
+        skills_label.pack()
+
+    # 在 plot_most_similar_radar_chart 函数中调用 display_skills_to_draw
     def plot_most_similar_radar_chart():
         user_input = job_dropdown.get()
         most_similar_job = analyzer.find_most_similar_job(user_input)
-        radar_chart_drawer.plot_radar_chart({most_similar_job: analyzer.job_tec_json[most_similar_job]}, N=5)
-    
+        #display_skills_to_draw(most_similar_job, N=10)
+        radar_chart_drawer.plot_radar_chart({most_similar_job: analyzer.job_tec_json[most_similar_job]}, N=10)
+
+
     job_dropdown = ttk.Combobox(root, values=list(analyzer.job_tec_json.keys()))
     job_dropdown.pack()
 
-    plot_button = tk.Button(root, text="绘制星图", command=plot_most_similar_radar_chart)
+    plot_button = tk.Button(root, text="Draw a star map", command=plot_most_similar_radar_chart)
     plot_button.pack()
     
     root.mainloop()
