@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 # 创建一个空的字典来存储每个职位的技术栈
 job_skills_dict = defaultdict(list)
-csv_path = 'update_Boss_skills.csv'  # 假定文件已上传到这个路径
+csv_path = 'merged/update_merged_skills.csv'  # 假定文件已上传到这个路径
 df = pd.read_csv(csv_path)
 
 # 加载预训练的 SentenceTransformer 模型
@@ -82,7 +82,7 @@ for index, row in df.iterrows():
 df_all_jobs = pd.DataFrame(all_jobs_df)
 
 # 将结果写入 CSV 文件
-csv_file_name = f"clustered_jobs_with_{args.job_threshold}.csv"
+csv_file_name = f"merged/clustered_jobs_with_{args.job_threshold}.csv"
 df_all_jobs.to_csv(csv_file_name, index=False)
 
 print(f"结果已写入文件 {csv_file_name}")

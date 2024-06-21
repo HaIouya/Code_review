@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # 定义输入和输出文件参数
-INPUT_FILE="Boss直聘.csv"
+INPUT_FILE="merged/merged.csv"
 WORK_CONTENT_OUTPUT="Boss_work_content.csv"
 WORK_REQUIRES_OUTPUT="Boss_work_requires.csv"
-WORK_SKILLS_OUTPUT="Boss直聘_skills_qwen.csv"
+WORK_SKILLS_OUTPUT="merged/merged_ceshi.csv"
 
 # 第一个.py文件
 python work_content.py --input "$INPUT_FILE" --output "$WORK_CONTENT_OUTPUT"

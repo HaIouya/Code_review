@@ -8,8 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
+from matplotlib.font_manager import FontProperties
 from tkinter import ttk
-
 class JobSkillsAnalyzer:
     def __init__(self, csv_path):
         self.csv_path = csv_path
@@ -35,7 +35,7 @@ class JobSkillsAnalyzer:
             job_tec_json[job_title] = dict(skill_counts)
         return job_tec_json
 
-    def merge_similar_skills(self, threshold=0.85):
+    def merge_similar_skills(self, threshold=0.6):
         model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
         for job_name, skills in self.job_tec_json.items():
             skill_names = list(skills.keys())
@@ -61,6 +61,7 @@ class RadarChartDrawer:
 
     def plot_radar_chart(self, selected_job_contents, N=5):
         fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
+        plt.subplots_adjust(left=0.26, bottom=0.20, right=0.60, top=1, wspace=0.2, hspace=0.2)
         angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
 
         for i, (job, skills) in enumerate(selected_job_contents.items()):
@@ -71,16 +72,31 @@ class RadarChartDrawer:
             ax.fill(angles_job, values, color=np.random.rand(3).tolist(), alpha=0.25)
             ax.plot(angles_job, values, color=np.random.rand(3).tolist(), linewidth=2, linestyle='solid', label=job)
 
+         
+        # 设置中文字体为'SimHei'
+        ax.set_xticklabels(list(top_skills.keys()), fontproperties='SimHei')
+
+        
         ax.set_yticklabels([])
         ax.set_xticks(angles[:len(top_skills)])
         ax.set_xticklabels(list(top_skills.keys()))
         plt.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
+        # 在雷达图下方添加文本
+        ax.text(0, -0.1, '技能排行榜:', transform=ax.transAxes, ha='center', va='center', fontsize=12, fontproperties='SimHei')
+        for rank, (skill, count) in enumerate(top_skills.items(), start=1):
+            ax.text(0, -0.1 - rank * 0.05, f'{rank}. {skill}: {count}', transform=ax.transAxes, ha='center', va='center', fontsize=10, fontproperties='SimHei')
         plt.show()
 
+        
 def main():
     analyzer = JobSkillsAnalyzer('Boss直聘_skills.csv')
     analyzer.merge_similar_skills()
     radar_chart_drawer = RadarChartDrawer(analyzer.job_tec_json)
+    
+    # 设置字体
+    font_family = 'SimSun'  # 宋体
+    font_size = 12
+    font = (font_family, font_size)
 
     root = tk.Tk()
     root.title("职业星图绘制") 
@@ -92,7 +108,7 @@ def main():
     job_dropdown = ttk.Combobox(root, values=list(analyzer.job_tec_json.keys()))
     job_dropdown.pack()
 
-    plot_button = tk.Button(root, text="绘制星图".encode('utf-8'), command=lambda: radar_chart_drawer.plot_radar_chart({job_dropdown.get(): analyzer.job_tec_json[job_dropdown.get()]}, N=5))
+    plot_button = tk.Button(root, text="绘制星图", command=lambda: radar_chart_drawer.plot_radar_chart({job_dropdown.get(): analyzer.job_tec_json[job_dropdown.get()]}, N=5))
     plot_button.pack()
 
     root.mainloop()

@@ -8,7 +8,7 @@ import argparse
 
 
 def call_large_model_api(user_prompt, user_input):
-    url = 'https://u21829-90a8-3fdeb09c.westc.gpuhub.com:8443/v1/chat/completions'  # 请替换为实际的API URL
+    url = 'https://u21829-892d-10b0deb3.westc.gpuhub.com:8443/v1/chat/completions'  # 请替换为实际的API URL
     headers = {
         'Content-Type': 'application/json',
         # 请替换为实际的API密钥

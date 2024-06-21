@@ -35,7 +35,7 @@ class JobSkillsAnalyzer:
             job_tec_json[job_title] = dict(skill_counts)
         return job_tec_json
 
-    def merge_similar_skills(self, threshold=0.85):
+    def merge_similar_skills(self, threshold=0.6):
         model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
         for job_name, skills in self.job_tec_json.items():
             skill_names = list(skills.keys())
@@ -92,7 +92,7 @@ def main():
     job_dropdown = ttk.Combobox(root, values=list(analyzer.job_tec_json.keys()))
     job_dropdown.pack()
 
-    plot_button = tk.Button(root, text="绘制星图".encode('utf-8'), command=lambda: radar_chart_drawer.plot_radar_chart({job_dropdown.get(): analyzer.job_tec_json[job_dropdown.get()]}, N=5))
+    plot_button = tk.Button(root, text="绘制星图", command=lambda: radar_chart_drawer.plot_radar_chart({job_dropdown.get(): analyzer.job_tec_json[job_dropdown.get()]}, N=5))
     plot_button.pack()
 
     root.mainloop()

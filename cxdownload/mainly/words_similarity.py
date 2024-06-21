@@ -6,7 +6,7 @@ import numpy as np
 print("正在加载模型，请稍等...")
 
 # 1. Load a pretrained Sentence Transformer model
-model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+model = SentenceTransformer("./paraphrase-multilingual-MiniLM-L12-v2")
 
 # Notify the user that the model is loaded
 print("模型加载完成，现在可以输入句子进行相似度对比。")

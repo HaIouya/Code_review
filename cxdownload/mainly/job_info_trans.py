@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-data = pd.read_csv('Boss直聘_skills.csv')
+data = pd.read_csv('merged/merged_skills.csv')
 
 data['公司性质'] = data['公司性质'].fillna('None')
 data['招聘人数'] = data['招聘人数'].fillna(1)
@@ -16,6 +16,11 @@ data['年']= data['更新日期'].str.extract(r'^(\d{4})-\d{2}-\d{2}').astype(in
 data['月']= data['更新日期'].str.extract(r'^\d{4}-(\d{2})-\d{2}').astype(int)
 data['日']= data['更新日期'].str.extract(r'^\d{4}-\d{2}-(\d{2})').astype(int)
 
+# 创建一个新的列'日期'，格式为'年/月/日'
+data['日期'] = data.apply(lambda row: f"{row['年']}/{row['月']:02d}/{row['日']:02d}", axis=1)
+
+# 如果不需要年、月、日这些单独的列，可以将其删除
+data.drop(['年', '月', '日'], axis=1, inplace=True)
 
 # 省市对照关系： {市：省}
 city_to_province = {
@@ -413,7 +418,7 @@ for j in range(len(data)):
             data.loc[j, '市'] = city 
             data.loc[j, '省'] = city_to_province[city]
             break  # 找到匹配的城市后，跳出内部循环
-data.to_csv('update_Boss_skills.csv',index=False)
+data.to_csv('merged/update_merged_skills.csv',index=False)
         
         
 
